@@ -43,7 +43,7 @@ app.listen(PORT, () => {
 });
 app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase,
-  username: req.cookies["username"] };
+  user_id: req.cookies["user_id"], user: users[req.cookies["user_id"]] };
   res.render("urls_index", templateVars);
 })
 
@@ -52,7 +52,7 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
+  // console.log(req.body);  // Log the POST request body to the console
   const newURL = generateRandomString();
   urlDatabase[newURL] = req.body.longURL;
   res.redirect(`./urls/${newURL}`);         // Respond with 'Ok' (we will replace this)
@@ -60,17 +60,18 @@ app.post("/urls", (req, res) => {
 
 
 app.get("/urls/new", (req, res) => {
-  let templateVars = { username: req.cookies["username"] }
+  let templateVars = { user_id: req.cookies["user_id"], user: users[req.cookies["user_id"]] }
   res.render("urls_new", templateVars);
 });
 
 app.get("/register", (req, res) => {
-  let templateVars = { username: req.cookies["username"] }
+  let templateVars = { user_id: req.cookies["user_id"], user: users[req.cookies["user_id"]] }
+  console.log(users[req.cookies["user_id"]])
   res.render("urls_register", templateVars)
 })
 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies.username };
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user_id: req.cookies["user_id"], user: users[req.cookies["user_id"]] };
   res.render("urls_show", templateVars);
 })
 app.post("/urls/:shortURL/delete", (req, res) => {
@@ -86,7 +87,7 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user_id: req.cookies["user_id"], user: users[req.cookies["user_id"]] };
   res.render("urls_index", templateVars);
 })
 
@@ -102,7 +103,7 @@ app.post("/login", (req, res) => {
 
 app.post("/logout", (req, res) => {
   console.log("hello");
-  res.clearCookie('username', req.body.username);
+  res.clearCookie('user_id', req.body.email);
   res.redirect("/urls");
 })
 

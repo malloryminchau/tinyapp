@@ -12,10 +12,10 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-        <% if (!username) { %>
+        <% if (!user_id) { %>
         <% } else { %>
           <div style="position:absolute; right:100px">
-            <form method="POST" action="/logout">Logged in as: <%= username %> <button type="submit" class="btn btn-danger">Logout</button></form>
+            <form method="POST" action="/logout">Logged in as: <%= user.email %> <button type="submit" class="btn btn-danger">Logout</button></form>
           </div>
         <% } %>
         <a class="nav-item nav-link" href="/register">Register</a>
