@@ -51,13 +51,6 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-app.get("/hello", (req, res) => {
-  let templateVars = { greeting: 'Hello World!' };
-  res.render("hello_world", templateVars);
-  // res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
-
 app.post("/urls", (req, res) => {
   console.log(req.body);  // Log the POST request body to the console
   const newURL = generateRandomString();
@@ -71,8 +64,13 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
+app.get("/register", (req, res) => {
+  let templateVars = { username: req.cookies["username"] }
+  res.render("urls_register", templateVars)
+})
+
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies.username };
   res.render("urls_show", templateVars);
 })
 app.post("/urls/:shortURL/delete", (req, res) => {
@@ -85,7 +83,6 @@ app.get("/u/:shortURL", (req, res) => {
     res.redirect(longURL);
   }
   res.send(404)
-  
 });
 
 app.get("/urls/:shortURL", (req, res) => {
@@ -107,4 +104,22 @@ app.post("/logout", (req, res) => {
   console.log("hello");
   res.clearCookie('username', req.body.username);
   res.redirect("/urls");
+})
+
+app.post("/register", (req, res) => {
+  if (req.body.email === '' && req.body.password === '') {
+    res.send(404);
+  } else if (req.body.email === '') {
+    res.send(404);
+  } else if(req.body.password === '') {
+    res.send(404);
+  } else {
+    let newId = generateRandomString();
+    users[newId] = { id: newId, 
+      email: req.body.email, 
+      password: req.body.password };
+    res.cookie('user_id', newId);
+    res.redirect("/urls")
+    console.log(users)
+  }
 })
