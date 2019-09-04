@@ -41,10 +41,18 @@ app.get("/", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
 app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase,
   user_id: req.cookies["user_id"], user: users[req.cookies["user_id"]] };
+  // console.log(templateVars.user)
   res.render("urls_index", templateVars);
+})
+
+app.get("/login", (req, res) => {
+  let templateVars = { urls: urlDatabase,
+  user_id: req.cookies["user_id"], user: users[req.cookies["user_id"]] };
+  res.render("urls_login", templateVars);
 })
 
 app.get("/urls.json", (req, res) => {
@@ -66,7 +74,7 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/register", (req, res) => {
   let templateVars = { user_id: req.cookies["user_id"], user: users[req.cookies["user_id"]] }
-  console.log(users[req.cookies["user_id"]])
+  // console.log(users[req.cookies["user_id"]])
   res.render("urls_register", templateVars)
 })
 
@@ -96,15 +104,29 @@ app.post("/urls/:shortURL/edit", (req, res) => {
   res.redirect("/urls");
 })
 
-app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
-  res.redirect("/urls");
-})
-
 app.post("/logout", (req, res) => {
   console.log("hello");
   res.clearCookie('user_id', req.body.email);
   res.redirect("/urls");
+})
+
+app.post("/login", (req, res) => {
+  for (let element in users) {
+    // console.log(element);
+    if (users[element].email === req.body.email) {
+      console.log(element);
+      if (users[element].password === req.body.password) {
+        let newId = element;
+        res.cookie('user_id', newId);
+        res.redirect("/urls")
+      } else {
+        res.send(403);
+      }
+    } else {
+      res.send(403);
+    }
+  }
+  
 })
 
 app.post("/register", (req, res) => {
@@ -121,6 +143,6 @@ app.post("/register", (req, res) => {
       password: req.body.password };
     res.cookie('user_id', newId);
     res.redirect("/urls")
-    console.log(users)
+    // console.log(users)
   }
 })
