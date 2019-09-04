@@ -13,14 +13,13 @@
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
         <% if (!username) { %>
-          <div style="position:absolute; right:100px">
-            <form method="POST" action="/login">Login: <input name="username" type="text"><button type="submit" class="btn btn-primary">Submit</button></form>
-          </div>
         <% } else { %>
           <div style="position:absolute; right:100px">
             <form method="POST" action="/logout">Logged in as: <%= username %> <button type="submit" class="btn btn-danger">Logout</button></form>
           </div>
         <% } %>
+        <a class="nav-item nav-link" href="/register">Register</a>
+        <a class="nav-item nav-link" href="/login">Login</a>
       </div>
     </div>
   </nav>
