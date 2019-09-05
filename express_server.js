@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const app = express();
 const PORT = 8080; // default port 8080
 const cookie = require("cookie-parser");
+const bcrypt = require('bcrypt');
 app.use(cookie());
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
@@ -142,18 +143,15 @@ app.post("/logout", (req, res) => {
 app.post("/login", (req, res) => {
   for (let element in users) {
     // console.log(element);
-    if (users[element].email === req.body.email && users[element].password === req.body.password) {
-     {
-        let newId = element;
-        res.cookie('user_id', newId);
-        res.redirect("/urls")
-      
-      }
-      
-    }
+    if (users[element].email === req.body.email && bcrypt.compareSync(req.body.password, users[element].password)=== true) {
+      let newId = element;
+      res.cookie('user_id', newId);
+      res.redirect("/urls")
+    } 
   }
-  res.send(403);
-  
+  if (!req.cookies["user_id"]) {
+    res.send(403);
+  }
 })
 
 app.post("/register", (req, res) => {
@@ -167,7 +165,7 @@ app.post("/register", (req, res) => {
     let newId = generateRandomString();
     users[newId] = { id: newId, 
       email: req.body.email, 
-      password: req.body.password };
+      password: bcrypt.hashSync(req.body.password, 10) };
     res.cookie('user_id', newId);
     res.redirect("/urls")
     // console.log(users)
