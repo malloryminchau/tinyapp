@@ -8,8 +8,8 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "aJ48lW" },
+  "9sm5xK": { longURL: "http://www.google.com", userID: "aJ48lW" }
 };
 
 const users = { 
@@ -34,6 +34,16 @@ function generateRandomString() {
   return stringId;
 }
 
+function urlsForUser(id) { // id is req.cookies["user_id"] if the user is logged in
+  let userUrls = {};
+  for(let element in urlDatabase) {
+    if (id === urlDatabase[element].userID) {
+      userUrls[element] = { longURL: urlDatabase[element].longURL, userID: id } // should make an object with the long url as the value and shor url as the key
+    }
+  }
+  return userUrls;
+}
+
 app.get("/", (req, res) => {
   res.redirect("/urls");
 });
@@ -43,10 +53,18 @@ app.listen(PORT, () => {
 });
 
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase,
-  user_id: req.cookies["user_id"], user: users[req.cookies["user_id"]] };
-  // console.log(templateVars.user)
-  res.render("urls_index", templateVars);
+
+  if(req.cookies["user_id"]) {
+    let id = req.cookies["user_id"]
+    let allowedUrls = urlsForUser(id);
+    let templateVars = { urls: allowedUrls, user_id: req.cookies["user_id"], user: users[req.cookies["user_id"]] }
+    res.render("urls_index", templateVars);
+    // console.log(allowedUrls)
+  } else {
+    let templateVars = { urls: urlDatabase,
+      user_id: req.cookies["user_id"], user: users[req.cookies["user_id"]] };
+      res.render("urls_index", templateVars)
+  }
 })
 
 app.get("/login", (req, res) => {
@@ -61,15 +79,24 @@ app.get("/urls.json", (req, res) => {
 
 app.post("/urls", (req, res) => {
   // console.log(req.body);  // Log the POST request body to the console
-  const newURL = generateRandomString();
-  urlDatabase[newURL] = req.body.longURL;
-  res.redirect(`./urls/${newURL}`);         // Respond with 'Ok' (we will replace this)
+  if (req.cookies["user_id"]) {
+    const newURL = generateRandomString();
+    const newURLObject = { longURL: req.body.longURL , userID: req.cookies["user_id"] }
+    urlDatabase[newURL] = newURLObject;
+    res.redirect(`./urls/${newURL}`);         // Respond with 'Ok' (we will replace this)
+  }
+
 });
 
 
 app.get("/urls/new", (req, res) => {
-  let templateVars = { user_id: req.cookies["user_id"], user: users[req.cookies["user_id"]] }
-  res.render("urls_new", templateVars);
+  if (req.cookies["user_id"]) {
+    let templateVars = { user_id: req.cookies["user_id"], user: users[req.cookies["user_id"]] }
+    res.render("urls_new", templateVars);
+  } else {
+    res.redirect("/login");
+  }
+  
 });
 
 app.get("/register", (req, res) => {
@@ -83,8 +110,11 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 })
 app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params.shortURL];
-  res.redirect("/urls")
+  if(req.cookies["user_id"]) {
+    delete urlDatabase[req.params.shortURL];
+    res.redirect("/urls")
+  }
+  
 })
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
@@ -105,7 +135,6 @@ app.post("/urls/:shortURL/edit", (req, res) => {
 })
 
 app.post("/logout", (req, res) => {
-  console.log("hello");
   res.clearCookie('user_id', req.body.email);
   res.redirect("/urls");
 })
@@ -113,19 +142,17 @@ app.post("/logout", (req, res) => {
 app.post("/login", (req, res) => {
   for (let element in users) {
     // console.log(element);
-    if (users[element].email === req.body.email) {
-      console.log(element);
-      if (users[element].password === req.body.password) {
+    if (users[element].email === req.body.email && users[element].password === req.body.password) {
+     {
         let newId = element;
         res.cookie('user_id', newId);
         res.redirect("/urls")
-      } else {
-        res.send(403);
+      
       }
-    } else {
-      res.send(403);
+      
     }
   }
+  res.send(403);
   
 })
 
